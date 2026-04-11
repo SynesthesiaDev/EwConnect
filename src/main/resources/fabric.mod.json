@@ -1,33 +1,28 @@
 {
-  "schemaVersion": 1,
-  "id": "ewconnect",
-  "version": "${version}",
-  "name": "EwConnect",
-  "description": "Mod for the ew smp",
-  "authors": ["SynesthesiaDev"],
-  "contact": {},
-  "license": "MIT",
-  "icon": "assets/ewconnect/icon.png",
-  "environment": "server",
-  "entrypoints": {
-    "fabric-datagen": [
-      "dev.synesthesia.ewconnect.client.MainDataGenerator"
+    "schemaVersion": 1,
+    "id": "ewconnect",
+    "version": "${version}",
+    "name": "EwConnect",
+    "description": "Mod for the ew smp",
+    "authors": [
+        "SynesthesiaDev"
     ],
-    "main": [
-        "dev.synesthesia.ewconnect.EwConnect"
-    ]
-  },
-  "mixins": [
-    "ewconnect.mixins.json",
-    {
-      "config": "ewconnect.client.mixins.json",
-      "environment": "client"
+    "contact": {},
+    "license": "MIT",
+    "icon": "assets/ewconnect/icon.png",
+    "environment": "server",
+    "entrypoints": {
+        "main": [
+            "dev.synesthesia.ewconnect.EwConnect"
+        ]
+    },
+    "mixins": [
+        "ewconnect.mixins.json"
+    ],
+    "depends": {
+        "fabricloader": ">=${loader_version}",
+        "fabric-language-kotlin": ">=${kotlin_loader_version}",
+        "fabric-api": "*",
+        "minecraft": "${minecraft_version}"
     }
-  ],
-  "depends": {
-    "fabricloader": ">=${loader_version}",
-    "fabric-language-kotlin": ">=${kotlin_loader_version}",
-    "fabric-api": "*",
-    "minecraft": "${minecraft_version}"
-  }
 }
