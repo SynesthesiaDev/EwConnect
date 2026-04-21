@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.session.ReadyEvent
 import net.dv8tion.jda.api.requests.GatewayIntent
+import net.minecraft.core.BlockPos
 import net.minecraft.server.TickTask
 import java.awt.Color
 import java.util.UUID
@@ -25,6 +26,8 @@ class DiscordBot(val settings: DiscordSettings) {
     private val embedColorJoin = 0x97ff6b
     private val embedColorLeave = 0xff6b72
     private val embedColorDeath = 0x66000a
+    private val embedColorReclaim = 0x34ebe1
+    private val embedColorAdvancement = 0xffef08
     private val avatarUrlBase = "https://mc-heads.net/head/"
 
     val jda = light(settings.token) {
@@ -95,11 +98,30 @@ class DiscordBot(val settings: DiscordSettings) {
         updatePlayerCount()
     }
 
-    fun onPlayerDeath(deathMessage: String, uuid: UUID, deaths: Int) {
+    fun onPlayerDeath(deathMessage: String, uuid: UUID, deaths: Int, graveLocation: String) {
         val embed = Embed {
-            title = "\uD83D\uDC80 $deathMessage"
-            description = "They have now died $deaths time(s)"
+            title = deathMessage
+            description = "\uD83D\uDC80 They have now died $deaths time(s)\n\n\uD83E\uDEA6 Their grave is at $graveLocation"
             color = embedColorDeath
+            thumbnail = getAvatarUrl(uuid)
+        }
+        channel?.sendMessageEmbeds(embed)?.queue()
+    }
+    
+    fun onGraveReclaim(name: String, uuid: UUID) {
+        val embed = Embed {
+            title = "$name has reclaimed their grave!"
+            color = embedColorReclaim
+            thumbnail = getAvatarUrl(uuid)
+        }
+        channel?.sendMessageEmbeds(embed)?.queue()
+    }
+
+    fun onAdvancement(name: String, uuid: UUID, advancement: String, advancementDescription: String) {
+        val embed = Embed {
+            title = "$name has made an advancement"
+            description = "\n**${advancement}**\n${advancementDescription}\n"
+            color = embedColorAdvancement
             thumbnail = getAvatarUrl(uuid)
         }
         channel?.sendMessageEmbeds(embed)?.queue()
