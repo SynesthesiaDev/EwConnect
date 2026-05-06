@@ -1,12 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import net.fabricmc.loom.task.RemapJarTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     kotlin("jvm") version "2.3.20"
-    id("fabric-loom") version "1.15-SNAPSHOT"
+    id("net.fabricmc.fabric-loom") version "1.16-SNAPSHOT"
     id("maven-publish")
     id("com.gradleup.shadow") version "9.2.2"
 }
@@ -25,7 +24,7 @@ val shade: Configuration by configurations.creating {
 }
 configurations.runtimeOnly.get().extendsFrom(shade)
 
-val targetJavaVersion = 21
+val targetJavaVersion = 25
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
@@ -52,25 +51,33 @@ fabricApi {
 }
 
 repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
     mavenCentral()
+    repositories {
+        maven {
+            name = "luck-repo"
+            url = uri("https://repo.lucko.me/")
+            content {
+                includeModule("me.lucko", "spark-api")
+            }
+        }
+    }
 }
 
 dependencies {
     minecraft("com.mojang:minecraft:${project.property("minecraft_version")}")
-    mappings(loom.officialMojangMappings())
-    modImplementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
-    modImplementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
+//    mappings(loom.officialMojangMappings())
+    implementation("net.fabricmc:fabric-loader:${project.property("loader_version")}")
+    implementation("net.fabricmc:fabric-language-kotlin:${project.property("kotlin_loader_version")}")
 
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
+    implementation("net.fabricmc.fabric-api:fabric-api:${project.property("fabric_version")}")
     implementation(kotlin("stdlib-jdk8"))
     implementation("net.dv8tion:JDA:6.4.1")
     implementation("club.minnced:jda-ktx:0.14.2")
 
+    implementation(include("org.incendo:cloud-core:2.0.0")!!)
+    implementation(include("org.incendo:cloud-kotlin-extensions:2.0.0")!!)
+    implementation(include("org.incendo:cloud-fabric:2.0.0-beta.16")!!)
+    
     val jdaVersion = "6.4.1"
     implementation("net.dv8tion:JDA:$jdaVersion") {
         exclude(module = "opus-java")
@@ -81,12 +88,10 @@ dependencies {
     shade("club.minnced:jda-ktx:0.14.2")
     
     include(implementation("org.mapdb:mapdb:3.1.0")!!)
-    include(modImplementation("io.github.revxrsal:lamp.common:4.0.0-rc.16")!!)
-    include(modImplementation("io.github.revxrsal:lamp.fabric:4.0.0-rc.16")!!)
-    include(modImplementation("io.github.revxrsal:lamp.brigadier:4.0.0-rc.16")!!)
     shade("org.mapdb:mapdb:3.1.0")
+    compileOnly("me.lucko:spark-api:0.1-SNAPSHOT")
 
-    modImplementation(include("net.kyori:adventure-platform-fabric:6.8.0")!!)
+    implementation(include("net.kyori:adventure-platform-fabric:6.9.0")!!)
 }
 
 tasks.processResources {
@@ -142,11 +147,7 @@ tasks.withType<KotlinJvmCompile> {
     }
 }
 
-tasks.build {
-    dependsOn(tasks.remapJar)
-}
-
-tasks.named<RemapJarTask>("remapJar") {
+tasks.named<Jar>("jar") {
     finalizedBy("finalJar")
 }
 
@@ -159,7 +160,7 @@ tasks.register<ShadowJar>("finalJar") {
     configurations = listOf(shade)
 
     doFirst {
-        val remappedFile = tasks.named<RemapJarTask>("remapJar").get().archiveFile.get().asFile
+        val remappedFile = tasks.named<Jar>("jar").get().archiveFile.get().asFile
         from(zipTree(remappedFile))
     }
 
@@ -173,5 +174,5 @@ tasks.register<ShadowJar>("finalJar") {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }

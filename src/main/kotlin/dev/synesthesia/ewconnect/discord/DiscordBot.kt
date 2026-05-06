@@ -6,6 +6,7 @@ import dev.minn.jda.ktx.jdabuilder.light
 import dev.minn.jda.ktx.messages.Embed
 import dev.synesthesia.ewconnect.EwConnect
 import dev.synesthesia.ewconnect.MinecraftChatUtils
+import dev.synesthesia.ewconnect.msToReadable
 import dev.synesthesia.ewconnect.settings.DiscordSettings
 import dev.synesthesia.ewconnect.settings.Settings
 import dev.synesthesia.ewconnect.ticksToReadable
@@ -86,10 +87,10 @@ class DiscordBot(val settings: DiscordSettings) {
         updatePlayerCount()
     }
 
-    fun onPlayerLeave(name: String, uuid: UUID, playtimeTicks: Int) {
+    fun onPlayerLeave(name: String, uuid: UUID, sessionPlaytime: Long, playtimeTicks: Int) {
         val embed = Embed {
             title = "$name has left the server!"
-            description = getPlaytime(playtimeTicks)
+            description = "They played for `${(System.currentTimeMillis() - sessionPlaytime).msToReadable()}` this session\nTheir total playtime is `${playtimeTicks.ticksToReadable()}`"
             color = embedColorLeave
             thumbnail = getAvatarUrl(uuid)
         }

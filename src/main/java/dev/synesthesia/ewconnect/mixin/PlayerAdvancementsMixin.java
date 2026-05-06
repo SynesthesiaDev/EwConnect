@@ -1,7 +1,6 @@
 package dev.synesthesia.ewconnect.mixin;
 
 import dev.synesthesia.ewconnect.EventHandlers;
-import dev.synesthesia.ewconnect.EwConnect;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;

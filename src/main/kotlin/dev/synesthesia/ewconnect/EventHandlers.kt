@@ -8,6 +8,7 @@ import dev.synesthesia.ewconnect.extensions.formattedNickname
 import dev.synesthesia.ewconnect.extensions.send
 import dev.synesthesia.ewconnect.extensions.toBlockPos
 import dev.synesthesia.ewconnect.settings.Settings
+import me.lucko.spark.api.SparkProvider
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -33,12 +34,14 @@ class EventHandlers(val mod: EwConnect) {
 
     init {
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
+            server.sendSystemMessage(Component.literal("ayooooooo loading"))
             EwConnect.server = server
             Settings.load()
 
             if (Settings.current.discord != null && Settings.current.discord!!.clientId != 0L) {
                 EwConnect.discordBot = DiscordBot(Settings.current.discord!!)
             }
+            EwConnect.spark = SparkProvider.get()
         }
 
         ServerPlayerEvents.JOIN.register { player ->
@@ -48,17 +51,20 @@ class EventHandlers(val mod: EwConnect) {
                 player.stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))
             )
             var graves = Database.getGraves(player.uuid)
-            if(graves.isNotEmpty()) {
+            if (graves.isNotEmpty()) {
                 player.send("<gray>You have <red>${graves.size} <gray>grave(s)! Check their location with <yellow>/graves")
             }
+            EwConnect.sessionTimes[player.uuid] = System.currentTimeMillis()
         }
 
         ServerPlayerEvents.LEAVE.register { player ->
             EwConnect.discordBot?.onPlayerLeave(
                 player.formattedNickname,
                 player.uuid,
+                EwConnect.sessionTimes[player.uuid]!!,
                 player.stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))
             )
+            EwConnect.sessionTimes.remove(player.uuid)
         }
 
         ServerLivingEntityEvents.ALLOW_DEATH.register { player, source, f ->
@@ -106,8 +112,8 @@ class EventHandlers(val mod: EwConnect) {
             return@register true
         }
 
-        
-        
+
+
         UseBlockCallback.EVENT.register { player, level, hand, result ->
             val blockPos = result.blockPos
             val grave = Database.getGraveAt(player.uuid, blockPos) ?: return@register InteractionResult.PASS
@@ -158,11 +164,18 @@ class EventHandlers(val mod: EwConnect) {
             EwConnect.discordBot?.onPlayerChat(player.formattedNickname, message)
             MinecraftChatUtils.sendPlayerChatMessage(player, message)
         }
-        
+
         @JvmStatic
         fun onAdvancementCallback(player: ServerPlayer, advancement: AdvancementHolder) {
             val info = Advancement.name(advancement).string
-            EwConnect.discordBot?.onAdvancement(player.plainTextName, player.uuid, info, advancement.value.display.get().description.string)
+            if (advancement.value.display.isPresent) {
+                EwConnect.discordBot?.onAdvancement(
+                    player.plainTextName,
+                    player.uuid,
+                    info,
+                    advancement.value.display.get().description.string
+                )
+            }
         }
 
         @JvmStatic
