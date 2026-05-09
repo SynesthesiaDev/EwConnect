@@ -13,11 +13,11 @@ import dev.synesthesia.ewconnect.ticksToReadable
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.MessageType
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent
 import net.dv8tion.jda.api.events.session.ReadyEvent
 import net.dv8tion.jda.api.requests.GatewayIntent
-import net.minecraft.core.BlockPos
 import net.minecraft.server.TickTask
 import java.awt.Color
 import java.util.UUID
@@ -63,11 +63,19 @@ class DiscordBot(val settings: DiscordSettings) {
             if (event.channel.idLong != settings.channelId) return@listener
             var member = event.message.member!!
 
+            var reply: Reply? = null
+            if (event.message.type == MessageType.INLINE_REPLY) {
+                val refMessage = event.message.referencedMessage!!
+                val authorName = guild!!.getMember(refMessage.author)?.nickname ?: refMessage.author.effectiveName
+                reply = Reply(authorName, refMessage.contentRaw)
+            }
+
             var color = member.colors.primary ?: Color(227, 245, 255)
             MinecraftChatUtils.sendFromDiscord(
                 member.nickname ?: member.user.effectiveName,
                 color,
-                event.message.contentRaw
+                event.message.contentRaw,
+                reply
             )
         }
     }
@@ -90,7 +98,8 @@ class DiscordBot(val settings: DiscordSettings) {
     fun onPlayerLeave(name: String, uuid: UUID, sessionPlaytime: Long, playtimeTicks: Int) {
         val embed = Embed {
             title = "$name has left the server!"
-            description = "They played for `${(System.currentTimeMillis() - sessionPlaytime).msToReadable()}` this session\nTheir total playtime is `${playtimeTicks.ticksToReadable()}`"
+            description =
+                "They played for `${(System.currentTimeMillis() - sessionPlaytime).msToReadable()}` this session\nTheir total playtime is `${playtimeTicks.ticksToReadable()}`"
             color = embedColorLeave
             thumbnail = getAvatarUrl(uuid)
         }
@@ -102,13 +111,14 @@ class DiscordBot(val settings: DiscordSettings) {
     fun onPlayerDeath(deathMessage: String, uuid: UUID, deaths: Int, graveLocation: String) {
         val embed = Embed {
             title = deathMessage
-            description = "\uD83D\uDC80 They have now died $deaths time(s)\n\n\uD83E\uDEA6 Their grave is at $graveLocation"
+            description =
+                "\uD83D\uDC80 They have now died $deaths time(s)\n\n\uD83E\uDEA6 Their grave is at $graveLocation"
             color = embedColorDeath
             thumbnail = getAvatarUrl(uuid)
         }
         channel?.sendMessageEmbeds(embed)?.queue()
     }
-    
+
     fun onGraveReclaim(name: String, uuid: UUID) {
         val embed = Embed {
             title = "$name has reclaimed their grave!"
@@ -129,7 +139,7 @@ class DiscordBot(val settings: DiscordSettings) {
     }
 
     private fun getAvatarUrl(uuid: UUID): String = "${avatarUrlBase}/$uuid/100"
-    
+
     private fun getPlaytime(ticks: Int): String = "Their playtime is: `${ticks.ticksToReadable()}`"
 
     private fun updatePlayerCount() {
@@ -139,4 +149,6 @@ class DiscordBot(val settings: DiscordSettings) {
             jda.presence.setPresence(OnlineStatus.ONLINE, Activity.playing("$playerCount players on ew smp"))
         }))
     }
+
+    data class Reply(val author: String, val message: String)
 }
