@@ -3,8 +3,7 @@ package dev.synesthesia.ewconnect.discord
 import dev.minn.jda.ktx.events.onCommand
 import dev.minn.jda.ktx.messages.Embed
 import dev.synesthesia.ewconnect.EwConnect
-import dev.synesthesia.ewconnect.extensions.formattedNickname
-import dev.synesthesia.ewconnect.extensions.nickname
+import dev.synesthesia.ewconnect.extensions.formattedDiscordNickname
 import dev.synesthesia.ewconnect.format
 import me.lucko.spark.api.statistic.StatisticWindow
 
@@ -33,7 +32,7 @@ class DiscordCommands(val bot: DiscordBot) {
 
                     description = players.joinToString("\n") { player ->
                         val ping = player.connection.latency()
-                        "> ${player.formattedNickname} `${ping}ms`"
+                        "> ${player.formattedDiscordNickname} `${ping}ms`"
                     }
                 }
             }

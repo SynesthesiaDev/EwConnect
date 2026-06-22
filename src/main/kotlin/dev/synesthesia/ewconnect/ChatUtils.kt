@@ -11,7 +11,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage
 import net.minecraft.server.level.ServerPlayer
 import java.awt.Color
 
-object MinecraftChatUtils {
+object ChatUtils {
 
     private const val DISCORD_PREFIX = "<#7289da>(DC) "
     private var minimessage = MiniMessage.miniMessage()
@@ -32,19 +32,20 @@ object MinecraftChatUtils {
         sendMessage(string)
     }
 
-    fun sendMessage(message: String) {
+    fun sendMessage(message: String, vararg player: ServerPlayer) {
         val component = minimessage.deserialize(message)
-        EwConnect.server.playerList.players.forEach { player -> player.sendMessage(component) }
+        EwConnect.server.playerList.players.filter { p -> !player.contains(p) }.forEach { player -> player.sendMessage(component) }
         EwConnect.server.sendMessage(component)
     }
 
-    fun sendFromDiscord(name: String, color: Color, message: String, reply: DiscordBot.Reply?) {
+    fun sendFromDiscord(name: String, color: Color, message: String, reply: DiscordBot.Reply?, hasAttachments: Boolean) {
+        val mediaAttached = if(hasAttachments) "<gray>(+ media attached)" else "" 
         if (reply != null) {
             val cutMessage = if(reply.message.length > 35) "${reply.message.substring(0, 35)}..." else reply.message
             sendMessage("${DISCORD_PREFIX}| <italic><gray>${reply.author}: <#d1d1d1>${cutMessage}</italic>")
-            sendMessage("      <#7289da>→ <${color.hex}>${name}: <white>${message}")
+            sendMessage("      <#7289da>→ <${color.hex}>${name}: <white>${message} $mediaAttached")
         } else {
-            sendMessage("${DISCORD_PREFIX}<${color.hex}>${name}: <white>${message}")
+            sendMessage("${DISCORD_PREFIX}<${color.hex}>${name}: <white>${message} $mediaAttached")
         }
     }
 

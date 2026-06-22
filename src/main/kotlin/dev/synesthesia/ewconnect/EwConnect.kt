@@ -1,7 +1,10 @@
 package dev.synesthesia.ewconnect
 
 import dev.synesthesia.ewconnect.commands.Commands
+import dev.synesthesia.ewconnect.commands.TreasureHuntCommands
 import dev.synesthesia.ewconnect.discord.DiscordBot
+import dev.synesthesia.ewconnect.event.IServerEvent
+import dev.synesthesia.ewconnect.event.treasurehunt.TreasureHuntEvent
 import me.lucko.spark.api.Spark
 import net.fabricmc.api.ModInitializer
 import net.minecraft.commands.CommandSourceStack
@@ -20,13 +23,20 @@ class EwConnect : ModInitializer {
         lateinit var spark: Spark
         var discordBot: DiscordBot? = null
         val sessionTimes = mutableMapOf<UUID, Long>()
+
+        val activeEvents: List<IServerEvent> = mutableListOf(
+            TreasureHuntEvent()
+        )
+        
     }
 
     override fun onInitialize() {
         events = EventHandlers(this)
-        val commandManager = FabricServerCommandManager(ExecutionCoordinator.simpleCoordinator(), SenderMapper.identity())
+        val commandManager =
+            FabricServerCommandManager(ExecutionCoordinator.simpleCoordinator(), SenderMapper.identity())
 
         Commands(commandManager)
+        TreasureHuntCommands(commandManager)
         sessionTimes.clear()
     }
 }

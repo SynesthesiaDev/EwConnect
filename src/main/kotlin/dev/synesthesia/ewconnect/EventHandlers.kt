@@ -3,15 +3,18 @@ package dev.synesthesia.ewconnect
 import dev.synesthesia.ewconnect.database.Database
 import dev.synesthesia.ewconnect.database.PlayerGrave
 import dev.synesthesia.ewconnect.discord.DiscordBot
-import dev.synesthesia.ewconnect.extensions.ToNMSComponent
-import dev.synesthesia.ewconnect.extensions.formattedNickname
+import dev.synesthesia.ewconnect.event.treasurehunt.TreasureHuntEvent
+import dev.synesthesia.ewconnect.extensions.toNMSComponent
+import dev.synesthesia.ewconnect.extensions.formattedDiscordNickname
 import dev.synesthesia.ewconnect.extensions.send
 import dev.synesthesia.ewconnect.extensions.toBlockPos
 import dev.synesthesia.ewconnect.settings.Settings
+import dev.synesthesia.ewconnect.utils.FabricScheduler
 import me.lucko.spark.api.SparkProvider
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
 import net.minecraft.advancements.Advancement
 import net.minecraft.advancements.AdvancementHolder
@@ -46,7 +49,7 @@ class EventHandlers(val mod: EwConnect) {
 
         ServerPlayerEvents.JOIN.register { player ->
             EwConnect.discordBot?.onPlayerJoin(
-                player.formattedNickname,
+                player.formattedDiscordNickname,
                 player.uuid,
                 player.stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))
             )
@@ -55,16 +58,18 @@ class EventHandlers(val mod: EwConnect) {
                 player.send("<gray>You have <red>${graves.size} <gray>grave(s)! Check their location with <yellow>/graves")
             }
             EwConnect.sessionTimes[player.uuid] = System.currentTimeMillis()
+            EwConnect.activeEvents.forEach { event -> event.onPlayerJoin(player) }
         }
 
         ServerPlayerEvents.LEAVE.register { player ->
             EwConnect.discordBot?.onPlayerLeave(
-                player.formattedNickname,
+                player.formattedDiscordNickname,
                 player.uuid,
                 EwConnect.sessionTimes[player.uuid]!!,
                 player.stats.getValue(Stats.CUSTOM.get(Stats.PLAY_TIME))
             )
             EwConnect.sessionTimes.remove(player.uuid)
+            EwConnect.activeEvents.forEach { event -> event.onPlayerLeave(player) }
         }
 
         ServerLivingEntityEvents.ALLOW_DEATH.register { player, source, f ->
@@ -113,6 +118,14 @@ class EventHandlers(val mod: EwConnect) {
         }
 
 
+        UseBlockCallback.EVENT.register { player, level, hand, result ->
+            EwConnect.activeEvents.forEach { event ->
+                if (event is TreasureHuntEvent) event.onPlayerClickOnBlock(player as ServerPlayer, result.blockPos)
+            }
+            
+
+            return@register InteractionResult.PASS
+        }
 
         UseBlockCallback.EVENT.register { player, level, hand, result ->
             val blockPos = result.blockPos
@@ -148,21 +161,25 @@ class EventHandlers(val mod: EwConnect) {
             }
 
             player.swing(InteractionHand.MAIN_HAND)
-            EwConnect.discordBot?.onGraveReclaim((player as ServerPlayer).formattedNickname, player.uuid)
+            EwConnect.discordBot?.onGraveReclaim((player as ServerPlayer).formattedDiscordNickname, player.uuid)
 
             return@register InteractionResult.SUCCESS_SERVER
+        }
+
+        ServerTickEvents.END_SERVER_TICK.register { server ->
+            FabricScheduler.tick(server)
         }
     }
 
     companion object {
 
         private const val MOTD: String = "<#fcdbff>the <#f475ff>ew nation <#fcdbff>Minecraft survival server!"
-        private val TRANSLATED_MOTD: Component = MinecraftChatUtils.translated(MOTD).ToNMSComponent()
+        private val TRANSLATED_MOTD: Component = ChatUtils.translated(MOTD).toNMSComponent()
 
         @JvmStatic
         fun onChatMessageCallback(player: ServerPlayer, message: String) {
-            EwConnect.discordBot?.onPlayerChat(player.formattedNickname, message)
-            MinecraftChatUtils.sendPlayerChatMessage(player, message)
+            EwConnect.discordBot?.onPlayerChat(player.formattedDiscordNickname, message)
+            ChatUtils.sendPlayerChatMessage(player, message)
         }
 
         @JvmStatic

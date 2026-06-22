@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     kotlin("jvm") version "2.3.20"
-    id("net.fabricmc.fabric-loom") version "1.16-SNAPSHOT"
+    id("net.fabricmc.fabric-loom") version "1.17-SNAPSHOT"
     id("maven-publish")
     id("com.gradleup.shadow") version "9.2.2"
 }
@@ -76,7 +76,7 @@ dependencies {
 
     implementation(include("org.incendo:cloud-core:2.0.0")!!)
     implementation(include("org.incendo:cloud-kotlin-extensions:2.0.0")!!)
-    implementation(include("org.incendo:cloud-fabric:2.0.0-beta.16")!!)
+    implementation(include("org.incendo:cloud-fabric:2.0.0-beta.17")!!)
     
     val jdaVersion = "6.4.1"
     implementation("net.dv8tion:JDA:$jdaVersion") {
@@ -91,7 +91,7 @@ dependencies {
     shade("org.mapdb:mapdb:3.1.0")
     compileOnly("me.lucko:spark-api:0.1-SNAPSHOT")
 
-    implementation(include("net.kyori:adventure-platform-fabric:6.9.0")!!)
+    implementation(include("net.kyori:adventure-platform-fabric:7.0.0")!!)
 }
 
 tasks.processResources {

@@ -5,7 +5,7 @@ import org.mapdb.DataOutput2
 import org.mapdb.Serializer
 
 
-class ListSerializer<T>(private val inner: Serializer<T>) : Serializer<List<T>> {
+class ListDatabaseSerializer<T>(private val inner: Serializer<T>) : Serializer<List<T>> {
 
     override fun serialize(data: DataOutput2, list: List<T>) {
         data.writeInt(list.size)

@@ -5,7 +5,7 @@ import dev.minn.jda.ktx.events.listener
 import dev.minn.jda.ktx.jdabuilder.light
 import dev.minn.jda.ktx.messages.Embed
 import dev.synesthesia.ewconnect.EwConnect
-import dev.synesthesia.ewconnect.MinecraftChatUtils
+import dev.synesthesia.ewconnect.ChatUtils
 import dev.synesthesia.ewconnect.msToReadable
 import dev.synesthesia.ewconnect.settings.DiscordSettings
 import dev.synesthesia.ewconnect.settings.Settings
@@ -29,6 +29,7 @@ class DiscordBot(val settings: DiscordSettings) {
     private val embedColorDeath = 0x66000a
     private val embedColorReclaim = 0x34ebe1
     private val embedColorAdvancement = 0xffef08
+    private val embedColorTreasureHunt = 0xff80b9
     private val avatarUrlBase = "https://mc-heads.net/head/"
 
     val jda = light(settings.token) {
@@ -37,6 +38,7 @@ class DiscordBot(val settings: DiscordSettings) {
             GatewayIntent.MESSAGE_CONTENT,
             GatewayIntent.GUILD_MESSAGES,
             GatewayIntent.GUILD_MESSAGE_REACTIONS,
+            GatewayIntent.GUILD_MEMBERS
         )
     }
 
@@ -52,7 +54,7 @@ class DiscordBot(val settings: DiscordSettings) {
             channel = jda.getTextChannelById(Settings.current.discord!!.channelId)
                 ?: throw RuntimeException("Failed to get channel!")
 
-            MinecraftChatUtils.sendBotMessage("<#95ff7a>Discord bot has loaded!")
+            ChatUtils.sendBotMessage("<#95ff7a>Discord bot has loaded!")
             DiscordCommands(this@DiscordBot)
             updatePlayerCount()
         }
@@ -61,22 +63,33 @@ class DiscordBot(val settings: DiscordSettings) {
             if (event.author.isBot) return@listener
             if (event.guild.idLong != settings.guildId) return@listener
             if (event.channel.idLong != settings.channelId) return@listener
-            var member = event.message.member!!
 
-            var reply: Reply? = null
+            var member = event.message.member!!
+            var color = member.colors.primary ?: Color(227, 245, 255)
+            val hasAttachments = event.message.attachments.isNotEmpty()
+
             if (event.message.type == MessageType.INLINE_REPLY) {
                 val refMessage = event.message.referencedMessage!!
-                val authorName = guild!!.getMember(refMessage.author)?.nickname ?: refMessage.author.effectiveName
-                reply = Reply(authorName, refMessage.contentRaw)
-            }
 
-            var color = member.colors.primary ?: Color(227, 245, 255)
-            MinecraftChatUtils.sendFromDiscord(
-                member.nickname ?: member.user.effectiveName,
-                color,
-                event.message.contentRaw,
-                reply
-            )
+                refMessage.guild.retrieveMember(refMessage.author).useCache(true).queue { refMember ->
+                    val authorName = refMember?.nickname ?: refMessage.author.effectiveName
+                    ChatUtils.sendFromDiscord(
+                        member.nickname ?: member.user.effectiveName,
+                        color,
+                        event.message.contentRaw,
+                        Reply(authorName, refMessage.contentRaw),
+                        hasAttachments
+                    )
+                }
+            } else {
+                ChatUtils.sendFromDiscord(
+                    member.nickname ?: member.user.effectiveName,
+                    color,
+                    event.message.contentRaw,
+                    null,
+                    hasAttachments
+                )
+            }
         }
     }
 
@@ -133,6 +146,16 @@ class DiscordBot(val settings: DiscordSettings) {
             title = "$name has made an advancement"
             description = "\n**${advancement}**\n${advancementDescription}\n"
             color = embedColorAdvancement
+            thumbnail = getAvatarUrl(uuid)
+        }
+        channel?.sendMessageEmbeds(embed)?.queue()
+    }
+
+    fun onTreasureHunt(uuid: UUID, message: String) {
+        val embed = Embed {
+            title = "Treasure Hunt"
+            description = message
+            color = embedColorTreasureHunt
             thumbnail = getAvatarUrl(uuid)
         }
         channel?.sendMessageEmbeds(embed)?.queue()
