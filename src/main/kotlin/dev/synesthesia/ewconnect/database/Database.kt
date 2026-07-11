@@ -2,6 +2,7 @@ package dev.synesthesia.ewconnect.database
 
 import dev.synesthesia.ewconnect.database.serializers.ListDatabaseSerializer
 import dev.synesthesia.ewconnect.event.treasurehunt.TreasureHuntData
+import dev.synesthesia.ewconnect.graveyard.GraveyardInfo
 import net.minecraft.core.BlockPos
 import org.mapdb.DB
 import org.mapdb.DBMaker
@@ -11,12 +12,12 @@ import java.util.Optional
 import java.util.UUID
 
 object Database {
-    private var database: DB = DBMaker
+    var database: DB = DBMaker
         .fileDB("./data.db")
         .transactionEnable()
         .closeOnJvmShutdown()
         .make()
-
+    
     private var nicknames = database.hashMap("nicknames", Serializer.UUID, Serializer.STRING).createOrOpen()
     private var colors = database.hashMap("colors", Serializer.UUID, Serializer.STRING).createOrOpen()
 
@@ -26,6 +27,12 @@ object Database {
         valueSerializer = ListDatabaseSerializer(PlayerGrave.DB_SERIALIZER)
     ).createOrOpen()
 
+    var graveyardData = database.hashMap(
+        name = "graveyard_info",
+        keySerializer = Serializer.UUID,
+        valueSerializer = GraveyardInfo.DB_SERIALIZER
+    ).createOrOpen()
+    
     private val treasureHuntData = database.hashMap(
         name = "treasure_hunt_data",
         keySerializer = Serializer.UUID,
@@ -44,8 +51,10 @@ object Database {
         database.commit()
     }
 
-    fun getColor(uuid: UUID): String? = colors[uuid]
-
+    fun getColorOrNull(uuid: UUID): String? = colors[uuid]
+    
+    fun getColorOrWhite(uuid: UUID): String = colors[uuid] ?: "#ffffff"
+    
     fun getGraves(uuid: UUID) = graves[uuid] ?: emptyList()
 
     fun addGrave(grave: PlayerGrave) {
@@ -55,7 +64,7 @@ object Database {
         graves[grave.uuid] = graveList
         database.commit()
     }
-
+    
     fun getGraveAt(uuid: UUID, blockPos: BlockPos): PlayerGrave? =
         getGraves(uuid).firstOrNull { p -> p.location == blockPos }
 

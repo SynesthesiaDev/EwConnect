@@ -1,12 +1,16 @@
 package dev.synesthesia.ewconnect.commands
 
+import dev.synesthesia.ewconnect.EwConnect
 import dev.synesthesia.ewconnect.database.Database
 import dev.synesthesia.ewconnect.extensions.color
+import dev.synesthesia.ewconnect.extensions.formattedChatNickname
 import dev.synesthesia.ewconnect.extensions.isValidHexColor
+import dev.synesthesia.ewconnect.extensions.location
 import dev.synesthesia.ewconnect.extensions.send
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.server.permissions.Permission
 import net.minecraft.server.permissions.PermissionLevel
+import net.minecraft.stats.Stats
 import org.incendo.cloud.fabric.FabricServerCommandManager
 import org.incendo.cloud.kotlin.extension.buildAndRegister
 import org.incendo.cloud.parser.standard.StringParser
@@ -88,6 +92,25 @@ class Commands(manager: FabricServerCommandManager<CommandSourceStack>) {
                     graves.forEach { grave ->
                         player.send("<gray> - <aqua>${grave.location.toShortString()} <gray>in <aqua>${grave.world} <yellow>(${grave.items.size} items)")
                     }
+                }
+            }
+        }
+        
+        manager.buildAndRegister("create_graveyard") {
+            required("player", stringParser(StringParser.StringMode.SINGLE))
+            handler { context ->
+                var hologramManager = EwConnect.hologramManager
+                var player = context.sender().player ?: return@handler
+                
+                hologramManager.remove("test")
+                
+                hologramManager.create("test") {
+                    setLocation(player.location.subtract(0.0, 1.975, 0.0))
+                    setUpdateRate(5)
+
+                    addStatic("tersting testing testing")
+                    addDynamic { "Hello there, ${player.formattedChatNickname}<white>!" }
+                    addDynamic { "You have <red>☠ ${player.stats.getValue(Stats.CUSTOM.get(Stats.DEATHS))}<white> deaths!" }
                 }
             }
         }

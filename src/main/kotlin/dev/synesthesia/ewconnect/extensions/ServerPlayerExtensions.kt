@@ -2,6 +2,8 @@ package dev.synesthesia.ewconnect.extensions
 
 import dev.synesthesia.ewconnect.ChatUtils
 import dev.synesthesia.ewconnect.database.Database
+import dev.synesthesia.ewconnect.entities.OfflinePlayer
+import dev.synesthesia.ewconnect.utils.Location
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Holder
 import net.minecraft.core.particles.ParticleOptions
@@ -15,12 +17,12 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundSource
-import java.awt.Color
+import javax.xml.crypto.Data
 
 fun ServerPlayer.send(message: String) = this.sendMessage(ChatUtils.translated(message))
 
 val ServerPlayer.color: String
-    get() = Database.getColor(this.uuid) ?: "#ffffff"
+    get() = Database.getColorOrNull(this.uuid) ?: "#ffffff"
 
 val ServerPlayer.nickname: String
     get() = Database.getNickname(this.uuid) ?: this.plainTextName
@@ -44,6 +46,28 @@ val ServerPlayer.formattedChatNickname: String
         )
     }
 
+
+val OfflinePlayer.color: String 
+    get() = Database.getColorOrWhite(this.uuid)
+
+val OfflinePlayer.formattedChatNickname: String
+    get() {
+        val color = Database.getColorOrWhite(this.uuid)
+        val nickname = Database.getNickname(this.uuid)
+
+        return buildString {
+            if (nickname != null) append("<gray>(${nickname}) ")
+            append(
+                "<${color}>${this@formattedChatNickname.username}"
+            )
+        }
+    }
+//    get() buildString {
+//        if (this@formattedChatNickname.hasNickname) append("<gray>(${this@formattedChatNickname.nickname}) ")
+//        append(
+//            "<${this@formattedChatNickname.color}>${this@formattedChatNickname.plainTextName}"
+//        )
+//    }
 
 fun ServerPlayer.sendPrivateSound(
     sound: Holder<SoundEvent>,
@@ -99,6 +123,8 @@ fun ServerPlayer.teleport(blockPos: BlockPos) {
     val x = blockPos.x.toDouble() + 0.5
     val y = blockPos.y.toDouble() + 0.5
     val z = blockPos.z.toDouble() + 0.5
-    
+
     this.teleportTo(x, y, z)
 }
+
+val ServerPlayer.location get() = Location.fromPlayer(this)

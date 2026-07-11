@@ -3,16 +3,19 @@ package dev.synesthesia.ewconnect
 import dev.synesthesia.ewconnect.database.Database
 import dev.synesthesia.ewconnect.database.PlayerGrave
 import dev.synesthesia.ewconnect.discord.DiscordBot
+import dev.synesthesia.ewconnect.entities.HologramManager
 import dev.synesthesia.ewconnect.event.treasurehunt.TreasureHuntEvent
 import dev.synesthesia.ewconnect.extensions.toNMSComponent
 import dev.synesthesia.ewconnect.extensions.formattedDiscordNickname
 import dev.synesthesia.ewconnect.extensions.send
 import dev.synesthesia.ewconnect.extensions.toBlockPos
+import dev.synesthesia.ewconnect.graveyard.GraveyardManager
 import dev.synesthesia.ewconnect.settings.Settings
 import dev.synesthesia.ewconnect.utils.FabricScheduler
 import me.lucko.spark.api.SparkProvider
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents
 import net.fabricmc.fabric.api.event.player.UseBlockCallback
@@ -30,14 +33,20 @@ import net.minecraft.sounds.SoundSource
 import net.minecraft.stats.Stats
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
+import net.minecraft.world.entity.decoration.ArmorStand
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.level.block.Blocks
 
 class EventHandlers(val mod: EwConnect) {
 
     init {
+        ServerEntityEvents.ENTITY_LOAD.register { entity, _ -> 
+            if(entity is ArmorStand && entity.entityTags().contains("ewconnect_cleanup_orphan") && !EwConnect.hologramManager.isActiveArmorStand(entity)) {
+                entity.discard()
+            }
+        }
+        
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
-            server.sendSystemMessage(Component.literal("ayooooooo loading"))
             EwConnect.server = server
             Settings.load()
 
@@ -45,6 +54,10 @@ class EventHandlers(val mod: EwConnect) {
                 EwConnect.discordBot = DiscordBot(Settings.current.discord!!)
             }
             EwConnect.spark = SparkProvider.get()
+            EwConnect.hologramManager = HologramManager()
+            EwConnect.graveyardCommands.cache()
+
+            GraveyardManager.createHolograms()
         }
 
         ServerPlayerEvents.JOIN.register { player ->
@@ -77,7 +90,6 @@ class EventHandlers(val mod: EwConnect) {
                 var location = player.position().toBlockPos()
                 var world = player.level()
                 val inventory = player.inventory
-
 
                 world.setBlock(location, Blocks.CHEST.defaultBlockState(), 3)
 
