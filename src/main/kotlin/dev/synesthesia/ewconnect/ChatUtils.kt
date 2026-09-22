@@ -16,10 +16,12 @@ object ChatUtils {
     private const val DISCORD_PREFIX = "<#7289da>(DC) "
     private var minimessage = MiniMessage.miniMessage()
 
+    @JvmStatic
     fun translated(message: String): Component {
         return minimessage.deserialize(message)
     }
 
+    @JvmStatic
     fun sendPlayerChatMessage(player: ServerPlayer, message: String) {
         val string = buildString {
             if (player.hasNickname) append("<gray>(${player.nickname}) ")
@@ -32,12 +34,14 @@ object ChatUtils {
         sendMessage(string)
     }
 
+    @JvmStatic
     fun sendMessage(message: String, vararg player: ServerPlayer) {
         val component = minimessage.deserialize(message)
         EwConnect.server.playerList.players.filter { p -> !player.contains(p) }.forEach { player -> player.sendMessage(component) }
         EwConnect.server.sendMessage(component)
     }
 
+    @JvmStatic
     fun sendFromDiscord(name: String, color: Color, message: String, reply: DiscordBot.Reply?, hasAttachments: Boolean) {
         val mediaAttached = if(hasAttachments) "<gray>(+ media attached)" else "" 
         if (reply != null) {
@@ -49,6 +53,7 @@ object ChatUtils {
         }
     }
 
+    @JvmStatic
     fun sendBotMessage(message: String) = sendMessage("${DISCORD_PREFIX}<white>${message}")
 
 }

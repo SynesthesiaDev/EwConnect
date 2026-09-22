@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     kotlin("jvm") version "2.3.20"
-    id("net.fabricmc.fabric-loom") version "1.17-SNAPSHOT"
+    id("net.fabricmc.fabric-loom") version "1.18-SNAPSHOT"
     id("maven-publish")
     id("com.gradleup.shadow") version "9.2.2"
 }
@@ -16,7 +16,6 @@ group = project.property("maven_group") as String
 base {
     archivesName.set(project.property("archives_base_name") as String)
 }
-
 
 val shade: Configuration by configurations.creating {
     isCanBeConsumed = false
@@ -46,7 +45,7 @@ loom {
 
 fabricApi {
     configureDataGeneration {
-        client = true
+        client = false
     }
 }
 
@@ -59,6 +58,9 @@ repositories {
             content {
                 includeModule("me.lucko", "spark-api")
             }
+        }
+        maven { 
+            url = uri("https://repo.opencollab.dev/main/")
         }
     }
 }
@@ -91,7 +93,9 @@ dependencies {
     shade("org.mapdb:mapdb:3.1.0")
     compileOnly("me.lucko:spark-api:0.1-SNAPSHOT")
 
-    implementation(include("net.kyori:adventure-platform-fabric:7.0.0")!!)
+    implementation(include("net.kyori:adventure-platform-fabric:7.2.0")!!)
+
+    compileOnly("org.geysermc.floodgate:api:2.2.5-SNAPSHOT")
 }
 
 tasks.processResources {

@@ -29,11 +29,11 @@ class HologramEntity(var location: Location, val lines: MutableList<IHologramLin
 
             line2Entity[line] = entity
 
-            location.getServerLevel().addFreshEntity(entity)
+            location.serverLevel.addFreshEntity(entity)
         }
 
-        val chunkPos = location.getServerLevel().getChunk(location.toBlockPos()).pos
-        location.getServerLevel().setChunkForced(chunkPos.x, chunkPos.z, true)
+        val chunkPos = location.serverLevel.getChunk(location.toBlockPos()).pos
+        location.serverLevel.setChunkForced(chunkPos.x, chunkPos.z, true)
     }
 
     fun update() {
@@ -43,7 +43,7 @@ class HologramEntity(var location: Location, val lines: MutableList<IHologramLin
     }
 
     private fun spawnArmorStand(spawnLocation: Vec3, text: String): ArmorStand {
-        val level = location.getServerLevel()
+        val level = location.serverLevel
         val stand = ArmorStand(level, spawnLocation.x, spawnLocation.y, spawnLocation.z)
 
         stand.isInvisible = true

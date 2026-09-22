@@ -1,6 +1,7 @@
 package dev.synesthesia.ewconnect.database
 
 import dev.synesthesia.ewconnect.database.serializers.ListDatabaseSerializer
+import dev.synesthesia.ewconnect.event.bonfire.BonfirePlayerData
 import dev.synesthesia.ewconnect.event.treasurehunt.TreasureHuntData
 import dev.synesthesia.ewconnect.graveyard.GraveyardInfo
 import net.minecraft.core.BlockPos
@@ -10,6 +11,7 @@ import org.mapdb.HTreeMap
 import org.mapdb.Serializer
 import java.util.Optional
 import java.util.UUID
+import kotlin.collections.mutableListOf
 
 object Database {
     var database: DB = DBMaker
@@ -17,7 +19,7 @@ object Database {
         .transactionEnable()
         .closeOnJvmShutdown()
         .make()
-    
+
     private var nicknames = database.hashMap("nicknames", Serializer.UUID, Serializer.STRING).createOrOpen()
     private var colors = database.hashMap("colors", Serializer.UUID, Serializer.STRING).createOrOpen()
 
@@ -32,11 +34,17 @@ object Database {
         keySerializer = Serializer.UUID,
         valueSerializer = GraveyardInfo.DB_SERIALIZER
     ).createOrOpen()
-    
+
     private val treasureHuntData = database.hashMap(
         name = "treasure_hunt_data",
         keySerializer = Serializer.UUID,
         valueSerializer = TreasureHuntData.DB_SERIALIZER
+    ).createOrOpen()
+
+    val bonfireFestivalData = database.hashMap(
+        name = "bonfire_festival_player_data",
+        keySerializer = Serializer.UUID,
+        valueSerializer = BonfirePlayerData.DB_SERIALIZER
     ).createOrOpen()
 
     fun setNickname(uuid: UUID, nickname: String?) {
@@ -52,9 +60,9 @@ object Database {
     }
 
     fun getColorOrNull(uuid: UUID): String? = colors[uuid]
-    
+
     fun getColorOrWhite(uuid: UUID): String = colors[uuid] ?: "#ffffff"
-    
+
     fun getGraves(uuid: UUID) = graves[uuid] ?: emptyList()
 
     fun addGrave(grave: PlayerGrave) {
@@ -64,7 +72,7 @@ object Database {
         graves[grave.uuid] = graveList
         database.commit()
     }
-    
+
     fun getGraveAt(uuid: UUID, blockPos: BlockPos): PlayerGrave? =
         getGraves(uuid).firstOrNull { p -> p.location == blockPos }
 
@@ -105,4 +113,33 @@ object Database {
         database.commit()
     }
 
+
+    fun getBonfirePlayerData(uuid: UUID): BonfirePlayerData {
+        var data = bonfireFestivalData[uuid]
+        if (data == null) {
+            data = BonfirePlayerData(
+                uuid = uuid,
+                lastCompletionTime = 0,
+                lastAssignmentTime = 0,
+                flamesCollectedRecently = mutableListOf(),
+                assignedToday = mutableListOf(),
+                totalDaysCompleted = 0,
+                bankedEmbers = 0
+            )
+        }
+
+        bonfireFestivalData[uuid] = data
+        database.commit()
+
+        return data
+    }
+
+    fun editBonfirePlayerData(uuid: UUID, unit: (BonfirePlayerData) -> Unit) {
+        val data = getBonfirePlayerData(uuid)
+
+        unit.invoke(data)
+
+        bonfireFestivalData[uuid] = data
+        database.commit()
+    }
 }

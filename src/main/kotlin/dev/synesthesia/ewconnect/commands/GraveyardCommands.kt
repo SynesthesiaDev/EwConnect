@@ -4,7 +4,6 @@ import dev.synesthesia.ewconnect.EwConnect
 import dev.synesthesia.ewconnect.entities.OfflinePlayer
 import dev.synesthesia.ewconnect.extensions.location
 import dev.synesthesia.ewconnect.extensions.send
-import dev.synesthesia.ewconnect.graveyard.GraveyardInfo
 import dev.synesthesia.ewconnect.graveyard.GraveyardManager
 import net.minecraft.commands.CommandSourceStack
 import net.minecraft.server.permissions.Permission

@@ -32,10 +32,9 @@ data class Location(val x: Double, val y: Double, val z: Double, val world: Stri
         val levelKey = ResourceKey.create(Registries.DIMENSION, resourceLocation)
         return EwConnect.server.getLevel(levelKey)
     }
-
-    fun getServerLevel(): ServerLevel {
-        return getServerLevelOrNull() ?: throw Exception("World with identifier `${world}` was not found")
-    }
+    
+    val serverLevel: ServerLevel get() = getServerLevelOrNull() ?: throw Exception("World with identifier `${world}` was not found")
+    
 
     fun subtract(x: Double, y: Double, z: Double): Location {
         return Location(this.x - x, this.y - y, this.z - z, world)

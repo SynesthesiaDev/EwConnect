@@ -3,21 +3,27 @@ package dev.synesthesia.ewconnect.commands
 import dev.synesthesia.ewconnect.EwConnect
 import dev.synesthesia.ewconnect.database.Database
 import dev.synesthesia.ewconnect.extensions.color
-import dev.synesthesia.ewconnect.extensions.formattedChatNickname
 import dev.synesthesia.ewconnect.extensions.isValidHexColor
-import dev.synesthesia.ewconnect.extensions.location
 import dev.synesthesia.ewconnect.extensions.send
+import dev.synesthesia.ewconnect.extensions.teleport
+import dev.synesthesia.ewconnect.utils.ChunkProfiler
 import net.minecraft.commands.CommandSourceStack
+import net.minecraft.core.BlockPos
 import net.minecraft.server.permissions.Permission
 import net.minecraft.server.permissions.PermissionLevel
-import net.minecraft.stats.Stats
 import org.incendo.cloud.fabric.FabricServerCommandManager
 import org.incendo.cloud.kotlin.extension.buildAndRegister
+import org.incendo.cloud.parser.standard.IntegerParser.integerParser
 import org.incendo.cloud.parser.standard.StringParser
 import org.incendo.cloud.parser.standard.StringParser.stringParser
+import org.incendo.cloud.suggestion.BlockingSuggestionProvider
 
 class Commands(manager: FabricServerCommandManager<CommandSourceStack>) {
 
+    private fun suggestCustomItems(): BlockingSuggestionProvider.Strings<CommandSourceStack> {
+        return BlockingSuggestionProvider.Strings { _, _ -> EwConnect.customItems.map { it.identifier } }
+    }
+    
     init {
 
         manager.buildAndRegister("nickname") {
@@ -95,23 +101,32 @@ class Commands(manager: FabricServerCommandManager<CommandSourceStack>) {
                 }
             }
         }
-        
-        manager.buildAndRegister("create_graveyard") {
-            required("player", stringParser(StringParser.StringMode.SINGLE))
-            handler { context ->
-                var hologramManager = EwConnect.hologramManager
-                var player = context.sender().player ?: return@handler
-                
-                hologramManager.remove("test")
-                
-                hologramManager.create("test") {
-                    setLocation(player.location.subtract(0.0, 1.975, 0.0))
-                    setUpdateRate(5)
 
-                    addStatic("tersting testing testing")
-                    addDynamic { "Hello there, ${player.formattedChatNickname}<white>!" }
-                    addDynamic { "You have <red>☠ ${player.stats.getValue(Stats.CUSTOM.get(Stats.DEATHS))}<white> deaths!" }
+        manager.buildAndRegister("chunklist") {
+            permission("ew.admin")
+            handler { context ->
+                var player = context.sender().player ?: return@handler
+
+                player.send(" ")
+                ChunkProfiler.getTopHeavyChunks(16).forEach { (chunk, bytes) -> 
+                    player.send("<aqua>[${chunk.x}, ${chunk.z}] <gray>- <yellow>${bytes} bytes (${bytes / 1024}kb)")
                 }
+                player.send(" ")
+            }
+        }
+
+        manager.buildAndRegister("chunktp") {
+            required<Int>("x", integerParser())
+            required<Int>("z", integerParser())
+            permission("ew.admin")
+            handler { context ->
+                var targetChunkX = context.get<Int>("x")
+                var targetChunkZ = context.get<Int>("z")
+                var player = context.sender().player ?: return@handler
+                val blockX = targetChunkX * 16.0
+                val blockZ = targetChunkZ * 16.0
+                
+                player.teleport(BlockPos(blockX.toInt(), 100, blockZ.toInt()))
             }
         }
     }

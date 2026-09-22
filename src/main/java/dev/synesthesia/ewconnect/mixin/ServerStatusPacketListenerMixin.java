@@ -1,12 +1,9 @@
 package dev.synesthesia.ewconnect.mixin;
 
 import dev.synesthesia.ewconnect.EventHandlers;
-import dev.synesthesia.ewconnect.EwConnect;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
 import net.minecraft.network.protocol.status.ServerStatus;
-import net.minecraft.network.protocol.status.ServerStatusPacketListener;
 import net.minecraft.network.protocol.status.ServerboundStatusRequestPacket;
 import net.minecraft.server.network.ServerStatusPacketListenerImpl;
 import org.spongepowered.asm.mixin.Final;
@@ -35,7 +32,7 @@ public class ServerStatusPacketListenerMixin {
     private static Component DISCONNECT_REASON;
 
     @Inject(at = @At("HEAD"), method = "handleStatusRequest", cancellable = true)
-    private void handleStatusRequest(ServerboundStatusRequestPacket serverboundStatusRequestPacket, CallbackInfo ci) {
+    private void handleStatusRequest(ServerboundStatusRequestPacket packet, CallbackInfo ci) {
         if (this.hasRequestedStatus) {
             this.connection.disconnect(DISCONNECT_REASON);
         } else {

@@ -1,0 +1,73 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:soul_soil",
+    "minecraft:soul_soil",
+    "minecraft:soul_soil",
+    "minecraft:soul_soil",
+    "minecraft:ghast_tear",
+    "minecraft:ghast_tear",
+    "minecraft:ghast_tear",
+    "minecraft:ghast_tear",
+    "minecraft:end_crystal"
+  ],
+  "result": {
+    "components": {
+      "minecraft:custom_name": {
+        "extra": [
+          {
+            "bold": true,
+            "color": "#ADD9FF",
+            "text": "Recovery Echo"
+          }
+        ],
+        "italic": false,
+        "text": ""
+      },
+      "minecraft:enchantment_glint_override": true,
+      "minecraft:lore": [
+        {
+          "italic": false,
+          "text": ""
+        },
+        {
+          "extra": [
+            {
+              "color": "gray",
+              "extra": [
+                {
+                  "color": "yellow",
+                  "extra": [
+                    {
+                      "color": "gray",
+                      "text": "to instantly"
+                    }
+                  ],
+                  "text": "Right-Click "
+                }
+              ],
+              "text": "Use "
+            }
+          ],
+          "italic": false,
+          "text": ""
+        },
+        {
+          "extra": [
+            {
+              "color": "gray",
+              "text": "recover all of your graves"
+            }
+          ],
+          "italic": false,
+          "text": ""
+        },
+        {
+          "italic": false,
+          "text": ""
+        }
+      ]
+    },
+    "id": "minecraft:echo_shard"
+  }
+}

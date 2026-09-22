@@ -1,7 +1,6 @@
 package dev.synesthesia.ewconnect.mixin;
 
 import dev.synesthesia.ewconnect.EventHandlers;
-import dev.synesthesia.ewconnect.EwConnect;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -18,8 +17,8 @@ public class ServerPlayNetworkHandlerMixin {
     public ServerPlayer player;
 
     @Inject(at = @At("HEAD"), method = "handleChat", cancellable = true)
-    private void onMessage(ServerboundChatPacket serverboundChatPacket, CallbackInfo ci) {
-        var message = serverboundChatPacket.message();
+    private void onMessage(ServerboundChatPacket packet, CallbackInfo ci) {
+        var message = packet.message();
         EventHandlers.onChatMessageCallback(player, message);
         ci.cancel();
     }

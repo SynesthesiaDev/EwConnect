@@ -4,10 +4,23 @@
     "package": "dev.synesthesia.ewconnect.mixin",
     "compatibilityLevel": "JAVA_21",
     "mixins": [
+        "AnvilMenuMixin",
+        "ArmorStandMixin",
+        "ChunkMapMixin",
+        "ClientboundMoveEntityPacketAccessor",
+        "EntityMixin",
+        "EntityTypeMixin",
+        "FireworkEntityAccessor",
+        "MannequinAccessor",
+        "PacketEncoderMixin",
         "PlayerAdvancementsMixin",
         "PlayerListAccessor",
+        "PlayerMixin",
+        "ServerPlayerMixin",
         "ServerPlayNetworkHandlerMixin",
-        "ServerStatusPacketListenerMixin"
+        "ServerStatusPacketListenerMixin",
+        "SnowballMixin",
+        "ThrowableItemProjectileAccessor"
     ],
     "injectors": {
         "defaultRequire": 1

@@ -19,6 +19,7 @@ import net.minecraft.network.codec.ByteBufCodecs
 import net.minecraft.network.codec.StreamCodec
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvents
+import net.minecraft.util.Prediction
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.Items
 import java.time.LocalDateTime
@@ -258,7 +259,7 @@ class TreasureHuntEvent : IServerEvent {
 
             playerRewards.forEach { item ->
                 if (!player.inventory.add(item)) {
-                    player.drop(item, false)
+                    player.drop(item, false, Prediction.PREDICTED)
                     player.send("<red>(!) Your inventory is fully so an item was dropped to the ground")
                 }
             }

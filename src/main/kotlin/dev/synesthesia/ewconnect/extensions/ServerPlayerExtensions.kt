@@ -17,9 +17,17 @@ import net.minecraft.network.protocol.game.ClientboundSoundPacket
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.sounds.SoundEvent
 import net.minecraft.sounds.SoundSource
+import net.minecraft.util.Prediction
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.entity.Avatar
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.component.SwingAnimation
 import javax.xml.crypto.Data
 
 fun ServerPlayer.send(message: String) = this.sendMessage(ChatUtils.translated(message))
+
+fun ServerPlayer.actionBar(message: String) = this.sendActionBar(ChatUtils.translated(message))
+
 
 val ServerPlayer.color: String
     get() = Database.getColorOrNull(this.uuid) ?: "#ffffff"
@@ -128,3 +136,23 @@ fun ServerPlayer.teleport(blockPos: BlockPos) {
 }
 
 val ServerPlayer.location get() = Location.fromPlayer(this)
+
+fun ServerPlayer.giveOrDrop(item: ItemStack) {
+    if(!this.inventory.add(item)) {
+        this.drop(item, false, Prediction.PREDICTED)
+        this.send("<red>(!) Your inventory is full so an item was dropped to the ground")
+    }
+}
+
+fun ServerPlayer.playSound(
+    sound: SoundEvent,
+    volume: Float,
+    pitch: Float,
+    source: SoundSource
+) {
+    this.level().playSound(null, this.x, this.y, this.z, sound, source, volume, pitch)
+}
+
+fun Avatar.swing() {
+    this.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, true)
+}
