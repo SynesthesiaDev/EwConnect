@@ -27,7 +27,7 @@ fun Int.ticksToReadable(): String {
         if (seconds > 0 || this.isEmpty()) append("${seconds}s")
     }.trim()
 }
-
+ 
 fun Long.msToReadable(): String {
     if (this <= 0) return "0s"
 

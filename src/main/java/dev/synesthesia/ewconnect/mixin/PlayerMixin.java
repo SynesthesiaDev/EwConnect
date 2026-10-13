@@ -14,5 +14,5 @@ public class PlayerMixin {
     private void onTick(CallbackInfo callbackInfo) {
         SharedHandler.INSTANCE.onPlayerTick((Player) (Object) this);
     }
-    
+
 }

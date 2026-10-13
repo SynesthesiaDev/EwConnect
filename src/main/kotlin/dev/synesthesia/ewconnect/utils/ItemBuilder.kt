@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceKey
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
 import net.minecraft.world.item.ItemStackTemplate
+import net.minecraft.world.item.Items
 import net.minecraft.world.item.component.ItemLore
 import net.minecraft.world.item.enchantment.Enchantment
 import net.minecraft.world.item.enchantment.ItemEnchantments
@@ -74,7 +75,13 @@ class ItemBuilder(private val item: Item, private val count: Int = 1) {
         nameComponent?.let { stack.set(DataComponents.CUSTOM_NAME, it) }
         loreComponent?.let { stack.set(DataComponents.LORE, it) }
         shinyFlag?.let { stack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, it) }
-        enchantmentsComponent?.let { stack.set(DataComponents.ENCHANTMENTS, it) }
+        enchantmentsComponent?.let {
+            if (item == Items.ENCHANTED_BOOK) {
+                stack.set(DataComponents.STORED_ENCHANTMENTS, it)
+            } else {
+                stack.set(DataComponents.ENCHANTMENTS, it)
+            }
+        }
         return stack
     }
 
@@ -83,7 +90,13 @@ class ItemBuilder(private val item: Item, private val count: Int = 1) {
         nameComponent?.let { patch.set(DataComponents.CUSTOM_NAME, it) }
         loreComponent?.let { patch.set(DataComponents.LORE, it) }
         shinyFlag?.let { patch.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, it) }
-        enchantmentsComponent?.let { patch.set(DataComponents.ENCHANTMENTS, it) }
+        enchantmentsComponent?.let {
+            if (item == Items.ENCHANTED_BOOK) {
+                patch.set(DataComponents.STORED_ENCHANTMENTS, it)
+            } else {
+                patch.set(DataComponents.ENCHANTMENTS, it)
+            }
+        }
         return ItemStackTemplate(item, patch.build())
     }
 }

@@ -88,8 +88,30 @@ fun ServerPlayer.sendPrivateSound(
 }
 
 fun ServerPlayer.sendPrivateSound(
+    sound: Holder<SoundEvent>,
+    volume: Float, pitch: Float
+) {
+    this.connection.send(
+        ClientboundSoundPacket(sound, SoundSource.MASTER, x, y, z, volume, pitch, this.random.nextLong())
+    )
+}
+
+
+fun ServerPlayer.sendPrivateSound(
     sound: SoundEvent,
     x: Double, y: Double, z: Double,
+    volume: Float, pitch: Float
+) {
+    val soundHolder = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound)
+
+    this.connection.send(
+        ClientboundSoundPacket(soundHolder, SoundSource.MASTER, x, y, z, volume, pitch, this.random.nextLong())
+    )
+}
+
+
+fun ServerPlayer.sendPrivateSound(
+    sound: SoundEvent,
     volume: Float, pitch: Float
 ) {
     val soundHolder = BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound)
@@ -146,6 +168,15 @@ fun ServerPlayer.giveOrDrop(item: ItemStack) {
 
 fun ServerPlayer.playSound(
     sound: SoundEvent,
+    volume: Float,
+    pitch: Float,
+    source: SoundSource
+) {
+    this.level().playSound(null, this.x, this.y, this.z, sound, source, volume, pitch)
+}
+
+fun ServerPlayer.playSound(
+    sound: Holder<SoundEvent>,
     volume: Float,
     pitch: Float,
     source: SoundSource

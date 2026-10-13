@@ -13,7 +13,8 @@ public class AnvilMenuMixin {
             method = "createResult",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/world/item/enchantment/Enchantment;getMaxLevel()I"
+                    target = "Lnet/minecraft/world/item/enchantment/Enchantment;getMaxLevel()I",
+                    ordinal = 0 
             )
     )
     private int anvil_removeMaxLevelClamp(Enchantment enchantment) {

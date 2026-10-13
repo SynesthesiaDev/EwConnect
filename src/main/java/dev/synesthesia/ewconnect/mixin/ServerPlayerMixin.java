@@ -16,4 +16,6 @@ public class ServerPlayerMixin {
     private void onGameModeChangeRiding(GameType gameType, CallbackInfoReturnable<Boolean> cir) {
         SharedHandler.INSTANCE.onGameModeChange((Player) (Object) this);
     }
+    
+    
 }

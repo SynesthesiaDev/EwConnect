@@ -11,6 +11,8 @@ import net.minecraft.sounds.SoundEvents
 import net.minecraft.sounds.SoundSource
 import net.minecraft.world.entity.EntityTypes
 import net.minecraft.world.entity.LightningBolt
+import net.minecraft.world.entity.animal.feline.Cat
+import net.minecraft.world.entity.animal.feline.CatVariants
 import net.minecraft.world.entity.decoration.Mannequin
 import net.minecraft.world.item.component.ResolvableProfile
 import net.minecraft.world.phys.Vec3
@@ -37,7 +39,7 @@ class TrollCommands(manager: FabricServerCommandManager<CommandSourceStack>) {
             }
         }
 
-        manager.buildAndRegister("winscreen") {
+        manager.buildAndRegister("credits") {
             required("player", VanillaArgumentParsers.singlePlayerSelectorParser())
             permission("ew.admin")
             handler { context ->

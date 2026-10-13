@@ -40,17 +40,19 @@ class RecoveryEcho : ICustomItem {
     val itemStackTemplate: ItemStackTemplate get() = ITEM_BUILDER.buildTemplate()
 
     override fun onRightClick(player: ServerPlayer) {
-
+        
         val graves = Database.getGraves(player.uuid)
         if (graves.isEmpty()) {
             player.send("<red>(!) You have no graves")
             return
         }
 
-        player.inventory.forEach { item ->
+        val inventory = player.inventory
+        for (i in 0 until inventory.containerSize) {
+            val item = inventory.getItem(i)
             if (ItemStack.isSameItemSameComponents(item, itemStack)) {
-                player.inventory.removeItem(item)
-                return@forEach
+                inventory.removeItem(i, 1) 
+                break
             }
         }
 

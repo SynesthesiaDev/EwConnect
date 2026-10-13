@@ -9,6 +9,7 @@ import dev.synesthesia.ewconnect.commands.TreasureHuntCommands
 import dev.synesthesia.ewconnect.commands.TrollCommands
 import dev.synesthesia.ewconnect.discord.DiscordBot
 import dev.synesthesia.ewconnect.entities.HologramManager
+import dev.synesthesia.ewconnect.event.halloween.HalloweenEvent
 import dev.synesthesia.ewconnect.event.IServerEvent
 import dev.synesthesia.ewconnect.event.paige.MiningFrenzy
 import dev.synesthesia.ewconnect.items.ICustomItem
@@ -38,8 +39,8 @@ class EwConnect : ModInitializer {
         lateinit var graveyardCommands: GraveyardCommands
         var discordBot: DiscordBot? = null
         val sessionTimes = mutableMapOf<UUID, Long>()
-
-        val activeEvents: List<IServerEvent> = mutableListOf(MiningFrenzy())
+        
+        val activeEvents: List<IServerEvent> = mutableListOf(HalloweenEvent())
         
         val customItems: List<ICustomItem> = mutableListOf(RecoveryEcho())
 

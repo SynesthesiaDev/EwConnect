@@ -25,7 +25,6 @@ class Commands(manager: FabricServerCommandManager<CommandSourceStack>) {
     }
     
     init {
-
         manager.buildAndRegister("nickname") {
             required("name", stringParser())
             handler { context ->
